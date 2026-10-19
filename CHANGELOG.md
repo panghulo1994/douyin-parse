@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- 新增 `dyparse web`：本地网页界面（粘贴链接、点按钮、看进度、复制正文）
+- 新增 `dyparse interactive`：控制台交互模式，双击后按提示粘贴链接
+- 新增 `tools/make_portable.py`：一键打 Windows 便携版（内置解释器 / 依赖 / ffmpeg / 模型 / 启动器）
+- 浏览器探测：Windows 上 Chrome 缺失时自动回退到 Edge
+- 转录后端支持 `DOUYIN_MODEL_DIR`，便携版把模型放包内
+
 ## 0.1.1 — 2026-10-19
 
 - 文档：安装说明改为 PyPI 正式可用，补 PyPI 与 Python 徽章
