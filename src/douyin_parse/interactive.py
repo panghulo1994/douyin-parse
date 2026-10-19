@@ -70,6 +70,14 @@ def run_interactive(cfg: Config) -> int:
     print(BANNER.format(ver=__version__, out=cfg.output_base))
     Path(cfg.output_base).mkdir(parents=True, exist_ok=True)
 
+    try:
+        return _loop(cfg)
+    except (EOFError, KeyboardInterrupt):
+        print("\n再见。")
+        return 0
+
+
+def _loop(cfg: Config) -> int:
     while True:
         print("  1. 解析一条链接")
         print("  2. 批量（一个 txt，一行一个链接）")

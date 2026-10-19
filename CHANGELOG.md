@@ -7,6 +7,7 @@
 - 新增 `tools/make_portable.py`：一键打 Windows 便携版（内置解释器 / 依赖 / ffmpeg / 模型 / 启动器）
 - 浏览器探测：Windows 上 Chrome 缺失时自动回退到 Edge
 - 转录后端支持 `DOUYIN_MODEL_DIR`，便携版把模型放包内
+- 浏览器启动失败时给出可操作的提示（关掉 Chrome / 删除配置目录）
 
 ## 0.1.1 — 2026-10-19
 

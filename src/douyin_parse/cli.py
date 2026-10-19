@@ -125,7 +125,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "interactive":
         from .interactive import run_interactive
 
-        return run_interactive(build(out=args.out, model=None, ai="auto"))
+        return run_interactive(build())
 
     cfg = build(
         url=getattr(args, "url", ""),
