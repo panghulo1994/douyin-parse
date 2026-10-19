@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "douyin-parse"
-version = "0.1.0"
+version = "0.1.1"
 description = "抖音链接 → 文案 / 画面文字 / 可靠性分析"
 readme = "README.md"
 requires-python = ">=3.10"

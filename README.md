@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/panghulo1994/douyin-parse/actions/workflows/ci.yml/badge.svg)](https://github.com/panghulo1994/douyin-parse/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/douyin-parse.svg)](https://pypi.org/project/douyin-parse/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 
 把抖音分享链接变成可读的文案：`链接 → 文案.txt / 文案_分析版.md`，附带画面文字（OCR）与一段 AI 可靠性分析。
@@ -23,20 +24,23 @@ dyparse parse "https://v.douyin.com/xxxxxx/"
 需要 Python 3.10+ 和 ffmpeg。
 
 ```bash
-# 推荐：隔离安装（发布到 PyPI 后）
+# 推荐：隔离安装
 pipx install "douyin-parse[all]"
 
 # 或者用 uv
 uv tool install "douyin-parse[all]"
 
-# 开发模式（现在就能用）
-git clone <repo> && cd douyin-parse
-pip install -e ".[all]"
+# 也可以直接装进当前环境
+pip install "douyin-parse[all]"
+
+# 开发模式
+git clone https://github.com/panghulo1994/douyin-parse.git
+cd douyin-parse && pip install -e ".[all]"
 playwright install chromium   # 非 Windows 或没装 Chrome 时需要
 ```
 
-> 还没发布到 PyPI：现在请用「开发模式」安装（`git clone` → `pip install -e ".[all]"`）。
-> 上面前两种写法是发布后的目标形态。
+`[all]` 会带上 whisper 和 OCR 依赖；不想装那么多就只装 `douyin-parse`，
+再按需补 `pip install faster-whisper`。
 
 转录后端二选一，**推荐 faster-whisper**（CPU 快 3–4 倍，不用装 torch）：
 
