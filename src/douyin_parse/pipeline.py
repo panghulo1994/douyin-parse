@@ -378,7 +378,7 @@ def run(cfg: Config) -> int:
                 f.write(transcript)
 
             # 保存修订报告
-            from douyin_corrector import save_correction_report
+            from .correct import save_correction_report
             if correction_result['stats']['total_corrections'] > 0:
                 report_path = f'{OUTPUT_DIR}/修订报告.md'
                 save_correction_report(correction_result, report_path)
@@ -654,7 +654,7 @@ def run(cfg: Config) -> int:
     ocr_texts = []
     try:
         from .ocr import extract_text_from_video, format_ocr_output
-        HAS_OCR = os.environ.get('DISABLE_VIDEO_OCR') != '1'
+        HAS_OCR = not cfg.disable_ocr
     except ImportError:
         HAS_OCR = False
 
@@ -690,7 +690,7 @@ def run(cfg: Config) -> int:
         print(f"  画面文字已保存: {OUTPUT_DIR}/{ocr_file}")
 
     # 保存修订报告
-    from douyin_corrector import save_correction_report
+    from .correct import save_correction_report
     if correction_result['stats']['total_corrections'] > 0:
         report_path = f'{OUTPUT_DIR}/修订报告.md'
         save_correction_report(correction_result, report_path)
