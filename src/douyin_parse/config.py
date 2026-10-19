@@ -42,6 +42,7 @@ class Config:
     headless: bool = False
     proxy: str = ""
     user_agent: str = ""
+    ai_choice: str = "auto"
     ai_provider: str = ""
     ai_api_url: str = ""
     ai_api_key: str = ""
@@ -205,6 +206,7 @@ def build(
         headless=headless,
         proxy=proxy if proxy is not None else os.environ.get("DOUYIN_PROXY", ""),
         user_agent=user_agent if user_agent is not None else os.environ.get("DOUYIN_USER_AGENT", ""),
+        ai_choice=ai,
         ai_provider=ai_cfg["provider"],
         ai_api_url=ai_cfg["url"],
         ai_api_key=ai_cfg["key"],

@@ -81,7 +81,7 @@ def write_batch_summary(summary_path: str, batch_file: str, results: list[dict])
 
 def _child_args(cfg: Config, url: str) -> list[str]:
     args = [sys.executable, "-m", "douyin_parse", "parse", url, "--out", cfg.output_base, "--model", cfg.whisper_model]
-    args += ["--ai", cfg.ai_provider or "auto"]
+    args += ["--ai", cfg.ai_choice or "auto"]
     if cfg.disable_ocr:
         args.append("--no-ocr")
     if cfg.auto_number:
