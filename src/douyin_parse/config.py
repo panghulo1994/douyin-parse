@@ -40,6 +40,8 @@ class Config:
     auto_number: bool = False
     browser_channel: str = ""
     headless: bool = False
+    proxy: str = ""
+    user_agent: str = ""
     ai_provider: str = ""
     ai_api_url: str = ""
     ai_api_key: str = ""
@@ -167,6 +169,8 @@ def build(
     backend: str = "auto",
     browser_channel: str | None = None,
     headless: bool = False,
+    proxy: str | None = None,
+    user_agent: str | None = None,
 ) -> Config:
     load_dotenv()
 
@@ -199,6 +203,8 @@ def build(
         auto_number=numbered,
         browser_channel=channel,
         headless=headless,
+        proxy=proxy if proxy is not None else os.environ.get("DOUYIN_PROXY", ""),
+        user_agent=user_agent if user_agent is not None else os.environ.get("DOUYIN_USER_AGENT", ""),
         ai_provider=ai_cfg["provider"],
         ai_api_url=ai_cfg["url"],
         ai_api_key=ai_cfg["key"],

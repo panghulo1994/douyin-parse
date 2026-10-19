@@ -52,6 +52,8 @@ def build_parser() -> argparse.ArgumentParser:
         sp.add_argument("--ai", default="auto", choices=("auto", "none", "deepseek", "mimo"), help="AI 供应商（默认 auto）")
         sp.add_argument("--auto-number", action="store_true", help="按修改时间给输出目录统一编号")
         sp.add_argument("--profile", metavar="DIR", help="浏览器 profile 目录")
+        sp.add_argument("--proxy", metavar="URL", help="代理，如 http://127.0.0.1:7890")
+        sp.add_argument("--user-agent", metavar="UA", help="自定义 User-Agent")
 
     p_parse = sub.add_parser("parse", help="解析一条抖音链接")
     p_parse.add_argument("url", help="抖音分享链接")
@@ -112,6 +114,8 @@ def main(argv: list[str] | None = None) -> int:
         profile_dir=args.profile,
         batch_file=getattr(args, "file", "") if args.command == "batch" else "",
         headless=getattr(args, "headless", False),
+        proxy=args.proxy,
+        user_agent=args.user_agent,
     )
     ai.configure(cfg.ai_provider, cfg.ai_api_url, cfg.ai_api_key, cfg.ai_model, cfg.ai_api_format)
 

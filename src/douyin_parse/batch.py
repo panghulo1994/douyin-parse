@@ -88,6 +88,12 @@ def _child_args(cfg: Config, url: str) -> list[str]:
         args.append("--auto-number")
     if cfg.profile_dir:
         args += ["--profile", cfg.profile_dir]
+    if cfg.headless:
+        args.append("--headless")
+    if cfg.proxy:
+        args += ["--proxy", cfg.proxy]
+    if cfg.user_agent:
+        args += ["--user-agent", cfg.user_agent]
     return args
 
 

@@ -51,6 +51,10 @@ def _launch_kwargs(cfg):
     kwargs = {"headless": cfg.headless}
     if cfg.browser_channel:
         kwargs["channel"] = cfg.browser_channel
+    if cfg.proxy:
+        kwargs["proxy"] = {"server": cfg.proxy}
+    if cfg.user_agent:
+        kwargs["user_agent"] = cfg.user_agent
     return kwargs
 
 

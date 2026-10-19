@@ -68,6 +68,8 @@ dyparse config --init                                 # 生成 .env 模板
 | `--auto-number` | 按修改时间给输出目录统一编号 | 关 |
 | `--backend NAME` | `auto/faster-whisper/whisper` | `auto` |
 | `--headless` | 无头浏览器（服务器用） | 关 |
+| `--proxy URL` | 代理，如 `http://127.0.0.1:7890` | 无 |
+| `--user-agent UA` | 自定义 UA | 浏览器默认 |
 | `-v, --force-video` | 图文被误判时强制视频流程 | 关 |
 
 也可以用环境变量：`DOUYIN_OUTPUT_BASE` / `DOUYIN_WHISPER_MODEL` / `DISABLE_VIDEO_OCR` / `DOUYIN_AI_PROVIDER` / `AI_API_URL` / `AI_API_KEY` / `AI_MODEL`。

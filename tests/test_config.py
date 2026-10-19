@@ -40,6 +40,10 @@ class BuildTest(unittest.TestCase):
         with mock.patch.dict(os.environ, {"DOUYIN_TRANSCRIBE_BACKEND": "whisper"}, clear=False):
             self.assertEqual(build("u").transcribe_backend, "whisper")
 
+    def test_proxy_from_env(self):
+        with mock.patch.dict(os.environ, {"DOUYIN_PROXY": "http://127.0.0.1:7890"}, clear=False):
+            self.assertEqual(build("u").proxy, "http://127.0.0.1:7890")
+
     def test_backend_explicit_wins(self):
         with mock.patch.dict(os.environ, {"DOUYIN_TRANSCRIBE_BACKEND": "whisper"}, clear=False):
             self.assertEqual(build("u", backend="faster-whisper").transcribe_backend, "faster-whisper")
