@@ -92,7 +92,10 @@ Windows 上密钥只存在「用户环境变量」里也能读到（不需要重
 
 ## 给 Agent 用（可选）
 
-仓库带一个 skill：`skills/douyin-parse/SKILL.md`。复制到你的技能目录即可：
+**项目记忆**：仓库根目录的 [AGENTS.md](AGENTS.md) 写了架构地图、命令、约定和已知坑，
+Codex / Cursor / DSH 等会直接读取；Claude Code 通过 [CLAUDE.md](CLAUDE.md) 导入同一份内容。
+
+**技能**：`skills/douyin-parse/SKILL.md`，复制到你的技能目录即可：
 
 - Claude Code：`~/.claude/skills/douyin-parse/`
 - DSH：`~/.dsh/skills/douyin-parse/`
