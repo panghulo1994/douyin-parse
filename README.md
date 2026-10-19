@@ -70,6 +70,8 @@ dyparse parse "https://v.douyin.com/xxxx/" -v         # 强制按视频解析
 dyparse parse "https://v.douyin.com/xxxx/" --ai none  # 全本地，不调用 AI
 dyparse batch links.txt                               # 批量，一行一个链接
 dyparse transcribe ./a.mp4                            # 本地文件，不联网、不开浏览器
+dyparse web                                           # 本地网页界面：粘贴链接点按钮
+dyparse interactive                                   # 控制台交互：按提示粘贴链接
 dyparse config --init                                 # 生成 .env 模板
 ```
 
@@ -87,6 +89,7 @@ dyparse config --init                                 # 生成 .env 模板
 | `--proxy URL` | 代理，如 `http://127.0.0.1:7890` | 无 |
 | `--user-agent UA` | 自定义 UA | 浏览器默认 |
 | `-v, --force-video` | 图文被误判时强制视频流程 | 关 |
+| `dyparse web --port 8765` | 起本地网页界面（默认自动开浏览器） | 8765 |
 
 也可以用环境变量：`DOUYIN_OUTPUT_BASE` / `DOUYIN_WHISPER_MODEL` / `DISABLE_VIDEO_OCR` / `DOUYIN_AI_PROVIDER` / `AI_API_URL` / `AI_API_KEY` / `AI_MODEL`。
 
@@ -152,6 +155,16 @@ faster-whisper 后端、本地文件模式、`--headless`。
 - [ ] 图形界面
 
 发布流程（PyPI + Trusted Publishing）见 [docs/发布.md](docs/发布.md)。
+
+## 打包成 Windows 便携版
+
+给不装 Python 的人用：内置解释器 + 依赖 + ffmpeg + whisper 模型 + 双击启动器。
+
+```bash
+python tools/make_portable.py --model small      # 产物在 dist/抖音文案工具{,-便携版.zip}
+```
+
+打出来的目录里，`启动.bat` 进网页界面，`启动-控制台.bat` 进交互模式。
 - [ ] 更多平台适配与失效自动检测
 
 ## 许可与免责声明

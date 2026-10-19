@@ -105,6 +105,23 @@ def read_setting(name: str) -> str:
     return (os.environ.get(name) or "").strip() or _windows_env(name)
 
 
+def detect_browser_channel() -> str:
+    """挑一个能用的浏览器：Chrome 优先，其次 Edge（Windows 自带），否则用 playwright 自带 chromium。"""
+    if os.name != "nt":
+        return ""
+    candidates = [
+        (Path(os.environ.get("PROGRAMFILES", "")) / "Google/Chrome/Application/chrome.exe", "chrome"),
+        (Path(os.environ.get("PROGRAMFILES(X86)", "")) / "Google/Chrome/Application/chrome.exe", "chrome"),
+        (Path(os.environ.get("LOCALAPPDATA", "")) / "Google/Chrome/Application/chrome.exe", "chrome"),
+        (Path(os.environ.get("PROGRAMFILES(X86)", "")) / "Microsoft/Edge/Application/msedge.exe", "msedge"),
+        (Path(os.environ.get("PROGRAMFILES", "")) / "Microsoft/Edge/Application/msedge.exe", "msedge"),
+    ]
+    for path, channel in candidates:
+        if str(path).strip() and path.is_file():
+            return channel
+    return ""
+
+
 def resolve_ffmpeg(explicit: str = "") -> str:
     """显式路径 → DOUYIN_FFMPEG → PATH → imageio-ffmpeg 兜底。"""
     for candidate in (explicit, os.environ.get("DOUYIN_FFMPEG", "")):
@@ -186,9 +203,9 @@ def build(
     channel = browser_channel
     if channel is None:
         channel = os.environ.get("DOUYIN_BROWSER_CHANNEL", "")
-        # Windows 默认用系统 Chrome（体积小、启动快）；其他平台用 playwright 自带的 chromium
-        if not channel and os.name == "nt":
-            channel = "chrome"
+        # Windows 优先用系统 Chrome，没有就用 Edge；其他平台用 playwright 自带的 chromium
+        if not channel:
+            channel = detect_browser_channel()
 
     return Config(
         url=url,

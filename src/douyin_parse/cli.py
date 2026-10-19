@@ -84,6 +84,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_local.add_argument("file", help="本地视频或音频文件")
     add_common(p_local)
 
+    p_web = sub.add_parser("web", help="本地网页界面（粘贴链接、点按钮）")
+    p_web.add_argument("--port", type=int, default=8765, help="端口（默认 8765）")
+    p_web.add_argument("--no-browser", action="store_true", help="不自动打开浏览器")
+    add_common(p_web)
+
+    sub.add_parser("interactive", help="控制台交互模式（按提示粘贴链接）")
+
     sub.add_parser("doctor", help="检查运行环境")
 
     p_config = sub.add_parser("config", help="配置")
@@ -115,6 +122,10 @@ def main(argv: list[str] | None = None) -> int:
         return doctor_main()
     if args.command == "config":
         return _handle_config(args)
+    if args.command == "interactive":
+        from .interactive import run_interactive
+
+        return run_interactive(build(out=args.out, model=None, ai="auto"))
 
     cfg = build(
         url=getattr(args, "url", ""),
@@ -134,6 +145,10 @@ def main(argv: list[str] | None = None) -> int:
     )
     ai.configure(cfg.ai_provider, cfg.ai_api_url, cfg.ai_api_key, cfg.ai_model, cfg.ai_api_format)
 
+    if args.command == "web":
+        from .webui import run_web
+
+        return run_web(cfg, port=args.port, open_browser=not args.no_browser)
     if args.command == "transcribe":
         from .local import run_local
 

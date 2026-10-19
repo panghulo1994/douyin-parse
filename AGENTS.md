@@ -30,16 +30,23 @@
 | `naming.py` | 文件名清洗、时长格式化、目录编号 | 命名/编号规则 |
 | `batch.py` | 批量模式（子进程逐条跑） | 批量行为 |
 | `local.py` | 本地文件模式（不开浏览器） | 本地转录 |
+| `webui.py` | 本地网页界面（标准库 http.server，子进程跑解析、轮询进度） | 改买家交互 |
+| `interactive.py` | 控制台交互模式（菜单 + 粘贴链接） | 改控制台流程 |
 | `doctor.py` | 环境自检 | 加检查项 |
+
+顶层还有两个非包目录：`packaging/`（便携版启动器模板）、`tools/make_portable.py`（打 Windows 便携版）。
 
 ## 常用命令
 
 ```bash
 pip install -e ".[all]"                     # 开发安装
-python -m unittest discover -s tests -v      # 31 条单测
+python -m unittest discover -s tests -v      # 单测
 python -m douyin_parse doctor                # 环境自检
 python -m douyin_parse parse "<链接>" --ai none --model small
 python -m douyin_parse transcribe ./a.mp4 --ai none --model tiny
+python -m douyin_parse web --no-browser      # 网页界面（开发时手动开）
+python -m douyin_parse interactive           # 控制台交互
+python tools/make_portable.py --no-zip       # 打便携版（不压 zip 快一点）
 ```
 
 测试不需要网络、不需要浏览器、不需要 ffmpeg：**不要让单测触发真实抓取**。
@@ -65,7 +72,7 @@ python -m douyin_parse transcribe ./a.mp4 --ai none --model tiny
 - **rapidocr 的置信度是字符串**：`conf` 可能是 `'0.79'`，直接和 `0.5` 比较会抛 `TypeError`，被裸 `except` 吞掉后表现为「OCR 恒为 0 段」。过滤逻辑统一走 `ocr.pick_texts()`。
 - **页面上的 duration 不可信**：可能是预加载片段，落盘前以音频实际长度为准。
 - **Windows 编码**：PowerShell 的 `*>` 重定向会写成 UTF-16；CLI 在非 TTY 时会把输出强制成 UTF-8，否则 `--help` 在 Windows CI 上会 `UnicodeEncodeError`。
-- **playwright 启动**：Windows 默认 `channel='chrome'`，其他平台用自带 chromium；服务器环境加 `--headless`。
+- **playwright 启动**：Windows 先找系统 Chrome，没有就用 Edge（`config.detect_browser_channel()`），其他平台用自带 chromium；服务器环境加 `--headless`。
 - **AI 探测不要起子进程**：Windows 上 `powershell` 冷启动可达 50 秒，早期用它读环境变量导致探测必然超时。现在写的是 `os.environ` + `winreg` 直读。
 
 ## 改完先自检

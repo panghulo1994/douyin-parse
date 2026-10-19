@@ -109,9 +109,13 @@ def _load_audio(whisper, path: str):
 
 
 def _run_faster_whisper(path: str, model: str, language: str, prompt: str) -> str:
+    import os
+
     from faster_whisper import WhisperModel
 
-    instance = WhisperModel(model, device="cpu", compute_type="int8")
+    # 便携版把模型放在包内，通过 DOUYIN_MODEL_DIR 指过去
+    download_root = os.environ.get("DOUYIN_MODEL_DIR") or None
+    instance = WhisperModel(model, device="cpu", compute_type="int8", download_root=download_root)
     segments, _info = instance.transcribe(
         path,
         language=language,
