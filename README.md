@@ -25,6 +25,9 @@ uv tool install "douyin-parse[all]"
 git clone <repo> && cd douyin-parse
 pip install -e ".[all]"
 playwright install chromium   # 非 Windows 或没装 Chrome 时需要
+> 还没发布到 PyPI：现在请用「开发模式」安装（git clone → pip install -e ".[all]"）。
+> 上面前两种写法是发布后的目标形态。
+
 ```
 
 装完先自检：
