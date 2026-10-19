@@ -8,6 +8,24 @@ import tempfile
 import sys
 
 
+def pick_texts(result, min_conf: float = 0.5, min_len: int = 2) -> list[str]:
+    """把 RapidOCR 的原始结果转成文字列表。
+
+    某些版本的 conf 是字符串（'0.79'），直接和 float 比较会抛异常，
+    早期代码用 try/except 吞掉，导致整段 OCR 静默返回空。
+    """
+    texts = []
+    for item in result or []:
+        try:
+            text = str(item[1]).strip()
+            conf = float(item[2])
+        except (TypeError, ValueError, IndexError):
+            continue
+        if len(text) >= min_len and conf > min_conf:
+            texts.append(text)
+    return texts
+
+
 def extract_text_from_video(video_path: str, ffmpeg_path: str, interval: float = 1.0, max_frames: int = 60) -> list[str]:
     """
     从视频中提取画面文字
@@ -73,20 +91,21 @@ def extract_text_from_video(video_path: str, ffmpeg_path: str, interval: float =
         all_texts = []
         seen_texts = set()
         
-        for i, frame_path in enumerate(frames):
+        errors = 0
+        for frame_path in frames:
             try:
                 result, _ = engine(frame_path)
-                if result:
-                    for item in result:
-                        text = item[1].strip()  # item[1]是识别的文字
-                        conf = item[2]  # item[2]是置信度
-                        if text and len(text) >= 2 and conf > 0.5:
-                            # 去重：避免重复的字幕/水印
-                            if text not in seen_texts:
-                                seen_texts.add(text)
-                                all_texts.append(text)
-            except Exception as e:
+            except Exception:
+                errors += 1
                 continue
+            if not result:
+                continue
+            for text in pick_texts(result):
+                if text not in seen_texts:
+                    seen_texts.add(text)
+                    all_texts.append(text)
+        if errors:
+            print(f"  [OCR] {errors} 帧识别失败，已跳过")
         
         print(f"  [OCR] 识别出 {len(all_texts)} 段独立文字")
         return all_texts
