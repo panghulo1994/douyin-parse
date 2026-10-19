@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>抖音文案提取工具 · 使用说明</title>
+<style>
+  :root { --fg:#1f2328; --muted:#57606a; --line:#d0d7de; --accent:#0969da; --bg:#ffffff; --soft:#f6f8fa; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg);
+         font-family: "Microsoft YaHei","PingFang SC","Segoe UI",system-ui,sans-serif;
+         font-size:15px; line-height:1.75; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 40px 28px 72px; }
+  header { border-bottom: 2px solid var(--line); padding-bottom: 18px; margin-bottom: 28px; }
+  h1 { font-size: 27px; margin: 0 0 6px; letter-spacing: .3px; }
+  .sub { color: var(--muted); font-size: 14px; }
+  h2 { font-size: 20px; margin: 38px 0 14px; padding-left: 10px; border-left: 4px solid var(--accent); }
+  h3 { font-size: 16px; margin: 22px 0 8px; }
+  p { margin: 8px 0; }
+  ol, ul { margin: 8px 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  code { background: var(--soft); border: 1px solid var(--line); border-radius: 4px;
+         padding: 1px 5px; font-family: Consolas,"Courier New",monospace; font-size: 13px; }
+  .note { background: var(--soft); border-left: 4px solid #bf8700; padding: 10px 14px; margin: 14px 0; border-radius: 0 6px 6px 0; font-size: 14px; }
+  .card { border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; margin: 14px 0; }
+  .card h3 { margin-top: 0; }
+  .tag { display: inline-block; font-size: 12px; color: #fff; background: var(--accent);
+         border-radius: 999px; padding: 1px 9px; margin-left: 6px; vertical-align: 2px; }
+  .tag.grey { background: #6e7781; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: var(--soft); font-weight: 600; }
+  .steps { counter-reset: step; list-style: none; padding-left: 0; }
+  .steps li { counter-increment: step; position: relative; padding-left: 34px; margin: 10px 0; }
+  .steps li::before { content: counter(step); position: absolute; left: 0; top: 1px;
+      width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff;
+      font-size: 13px; line-height: 22px; text-align: center; }
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+  @page { size: A4; margin: 14mm 12mm; }
+  @media print {
+    body { font-size: 12.5px; }
+    .wrap { max-width: none; padding: 0; }
+    h2 { page-break-after: avoid; }
+    .card, .note { page-break-inside: avoid; }
+    table { page-break-inside: auto; }
+    tr { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>抖音文案提取工具 · 使用说明</h1>
+  <div class="sub">版本 0.1.1 &nbsp;·&nbsp; 适用于 Windows 10 / 11（64 位）&nbsp;·&nbsp; 解压即用，无需安装</div>
+</header>
+
+<h2>三步上手</h2>
+<ol class="steps">
+  <li>把压缩包解压到任意目录，比如 <code>D:\抖音工具</code>（路径别太深）。</li>
+  <li>双击 <code>启动.bat</code>。如果 Windows 弹「已保护你的电脑」或杀毒软件提示，选择<b>「更多信息 → 仍要运行」</b>。</li>
+  <li>浏览器会自动打开一个页面，<b>把抖音链接粘进去，点「开始解析」</b>，等进度跑完就能看到文案。</li>
+</ol>
+
+<div class="note">
+  <b>第一次启动会慢一些</b>（要加载模型，约 10–20 秒），之后会快很多。解析过程中会弹出一个浏览器窗口抓取视频，<b>属于正常现象，不要关它</b>。
+</div>
+
+<h2>三种使用方式</h2>
+
+<div class="card">
+  <h3>方式一：网页界面 <span class="tag">推荐</span></h3>
+  <p>双击 <code>启动.bat</code>，浏览器自动打开本地页面 <code>http://127.0.0.1:8765</code>。</p>
+  <ol>
+    <li>在输入框里粘贴抖音分享链接（手机抖音「分享 → 复制链接」得到的那段）</li>
+    <li>点「开始解析」，页面会显示进度</li>
+    <li>完成后可直接「复制文案」，或点「打开输出文件夹」</li>
+  </ol>
+  <p><b>适合：</b>日常一条条解析，不想碰命令行的人。</p>
+</div>
+
+<div class="card">
+  <h3>方式二：控制台 <span class="tag grey">进阶</span></h3>
+  <p>双击 <code>启动-控制台.bat</code>，按提示粘贴链接后回车。</p>
+  <ol>
+    <li>选择「1. 单条解析」或「2. 批量」</li>
+    <li>粘贴链接，回车</li>
+    <li>看完整过程日志；失败时日志会告诉你是哪一步出的问题</li>
+  </ol>
+  <p><b>适合：</b>批量解析、想排查问题、想看详细日志的人。</p>
+</div>
+
+<div class="card">
+  <h3>方式三：接进 AI 客户端 <span class="tag grey">进阶</span></h3>
+  <p>如果你已经在用 CC GUI / Claude Code / Cursor 这类 AI 客户端，可以把 <code>skills\douyin-parse</code> 这个技能目录复制到客户端的技能目录里，之后<b>直接在对话框里发链接</b>：</p>
+  <p><code>帮我解析这个链接 https://v.douyin.com/xxxx/</code></p>
+  <p><b>适合：</b>已经在用 AI 客户端、希望「对话即解析」的人。</p>
+</div>
+
+<h2>输出文件说明</h2>
+<p>每次解析会在 <code>输出\</code> 下建一个文件夹，名字是「标题_日期」，里面有：</p>
+<table>
+  <tr><th>文件</th><th>是什么</th></tr>
+  <tr><td><code>文案.txt</code></td><td>纯正文，已加标点、已纠错，直接复制就能用</td></tr>
+  <tr><td><code>文案_分析版.md</code></td><td>标题 + 元信息表 + 正文 +（可选）AI 可靠性分析</td></tr>
+  <tr><td><code>画面文字.md</code></td><td>从视频画面里识别出的文字（字幕、图表、水印）</td></tr>
+  <tr><td><code>修订报告.md</code></td><td>语音识别纠错记录（有改动时才生成）</td></tr>
+  <tr><td><code>info.json</code></td><td>元数据：标题、作者、时长、原始转录等</td></tr>
+  <tr><td><code>audio.wav</code></td><td>提取出来的音频（可删，不影响文案）</td></tr>
+</table>
+
+<h2>常见问题</h2>
+<table>
+  <tr><th>现象</th><th>处理办法</th></tr>
+  <tr><td>双击没反应 / 窗口一闪而过</td><td>看 <code>logs\</code> 里最新的日志；多半是路径里有特殊字符，换个短路径试试</td></tr>
+  <tr><td>杀毒软件报毒</td><td>把整个文件夹加入信任区（这类工具会被误判，属正常）</td></tr>
+  <tr><td>浏览器打开是空白页</td><td>端口被占用：关掉之前的窗口再启动；或重启电脑后再试</td></tr>
+  <tr><td>提示「无法获取音频」</td><td>抖音改版或网络问题。先重试一次；仍失败请带日志联系售后</td></tr>
+  <tr><td>转录很慢</td><td>10 分钟以上的视频会明显变慢。建议单条不超过 10 分钟，或改用「快速模式」</td></tr>
+  <tr><td>要不要联网</td><td>抓视频必须联网；转录、OCR、纠错全部在本地完成</td></tr>
+  <tr><td>要不要买 AI</td><td>不需要。默认不调用 AI，出来的是纯文案；想要「可靠性分析」可以填自己的 key（可选）</td></tr>
+  <tr><td>能装几台电脑</td><td>解压即用，不限台数；但请勿转卖或公开传播</td></tr>
+</table>
+
+<h2>售后</h2>
+<ul>
+  <li>7 天内免费协助安装、答疑；装不上且远程也无法解决的，直接退款。</li>
+  <li>因抖音平台改版导致工具失效，免费提供一次更新版本。</li>
+  <li>联系方式：<b>【请填写你的闲鱼号 / 微信】</b></li>
+</ul>
+
+<footer>
+  本工具仅用于个人学习与研究：视频文案的著作权归原作者所有，请勿将提取内容用于商业再分发。<br>
+  抖音平台改版可能导致工具失效，属于已知情况，不视为质量问题。
+</footer>
+
+</div>
+</body>
+</html>

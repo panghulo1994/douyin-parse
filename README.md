@@ -62,6 +62,8 @@ dyparse doctor
 
 ## 用法
 
+> 更完整的使用说明（三种使用方式 + 输出文件 + 常见问题）：[docs/使用说明.html](docs/使用说明.html)（[PDF 版](docs/使用说明.pdf)）
+
 ```bash
 dyparse parse "https://v.douyin.com/xxxx/"            # 单条
 dyparse parse "https://v.douyin.com/xxxx/" -v         # 强制按视频解析
