@@ -56,6 +56,17 @@ dyparse config --init                                 # 生成 .env 模板
 
 也可以用环境变量：`DOUYIN_OUTPUT_BASE` / `DOUYIN_WHISPER_MODEL` / `DISABLE_VIDEO_OCR` / `DOUYIN_AI_PROVIDER` / `AI_API_URL` / `AI_API_KEY` / `AI_MODEL`。
 
+Windows 上密钥只存在「用户环境变量」里也能读到（不需要重启终端）。
+
+## 给 Agent 用（可选）
+
+仓库带一个 skill：`skills/douyin-parse/SKILL.md`。复制到你的技能目录即可：
+
+- Claude Code：`~/.claude/skills/douyin-parse/`
+- DSH：`~/.dsh/skills/douyin-parse/`
+
+skill 只约定「什么时候调用、怎么汇报」，解析仍然由 `dyparse` 完成。
+
 ## 产出
 
 每条内容一个文件夹（`{标题}_{YYYYMMDD}`）：
