@@ -1,0 +1,200 @@
+"""配置解析：CLI 参数 > 环境变量 > .env > 内置默认。"""
+
+from __future__ import annotations
+
+import os
+import shutil
+from dataclasses import dataclass
+from pathlib import Path
+
+APP = "douyin-parse"
+
+# 内置供应商：都走 OpenAI 兼容接口
+PROVIDERS = {
+    "deepseek": {
+        "url": "https://api.deepseek.com/v1/chat/completions",
+        "model": "deepseek-chat",
+        "key_env": ("DEEPSEEK_API_KEY",),
+    },
+    "mimo": {
+        "url": "https://token-plan-cn.xiaomimimo.com/v1/chat/completions",
+        "model": "mimo-v2.6-flash",
+        "key_env": ("XIAOMI_MIMO_API_KEY", "ANTHROPIC_AUTH_TOKEN"),
+    },
+}
+AUTO_ORDER = ("mimo", "deepseek")
+
+
+@dataclass
+class Config:
+    url: str = ""
+    batch_file: str = ""
+    output_base: str = ""
+    profile_dir: str = ""
+    ffmpeg: str = ""
+    whisper_model: str = "small"
+    force_video: bool = False
+    disable_ocr: bool = False
+    auto_number: bool = False
+    browser_channel: str = ""
+    headless: bool = False
+    ai_provider: str = ""
+    ai_api_url: str = ""
+    ai_api_key: str = ""
+    ai_model: str = ""
+    ai_api_format: str = "openai"
+
+
+def config_dir() -> Path:
+    if os.name == "nt":
+        base = Path(os.environ.get("APPDATA") or Path.home() / "AppData" / "Roaming")
+    else:
+        base = Path(os.environ.get("XDG_CONFIG_HOME") or Path.home() / ".config")
+    return base / APP
+
+
+def cache_dir() -> Path:
+    if os.name == "nt":
+        base = Path(os.environ.get("LOCALAPPDATA") or Path.home() / "AppData" / "Local")
+    else:
+        base = Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache")
+    return base / APP
+
+
+def load_dotenv() -> None:
+    """读 ./.env 与配置目录的 .env；不覆盖已存在的环境变量。"""
+    for path in (Path.cwd() / ".env", config_dir() / ".env"):
+        if not path.is_file():
+            continue
+        try:
+            raw = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        for line in raw.splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key and key not in os.environ:
+                os.environ[key] = value
+
+
+def _windows_env(name: str) -> str:
+    """读 Windows「用户环境变量」——他们的 key 通常只存在这里，不进进程环境。"""
+    if os.name != "nt":
+        return ""
+    try:
+        import winreg
+
+        with winreg.OpenKey(winreg.HKEY_CURRENT_USER, "Environment") as key:
+            value, _ = winreg.QueryValueEx(key, name)
+            return str(value).strip()
+    except OSError:
+        return ""
+
+
+def read_setting(name: str) -> str:
+    """进程环境变量优先，Windows 上再回落到用户环境变量。"""
+    return (os.environ.get(name) or "").strip() or _windows_env(name)
+
+
+def resolve_ffmpeg(explicit: str = "") -> str:
+    """显式路径 → DOUYIN_FFMPEG → PATH → imageio-ffmpeg 兜底。"""
+    for candidate in (explicit, os.environ.get("DOUYIN_FFMPEG", "")):
+        if candidate and Path(candidate).is_file():
+            return str(Path(candidate))
+    found = shutil.which("ffmpeg")
+    if found:
+        return found
+    try:
+        import imageio_ffmpeg
+
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:
+        return ""
+
+
+def resolve_ai(choice: str = "auto") -> dict:
+    """解析 AI 配置；返回 provider/url/key/model/format。"""
+    empty = {"provider": "", "url": "", "key": "", "model": "", "format": "openai"}
+    if choice == "none":
+        return empty
+
+    url = read_setting("AI_API_URL")
+    key = read_setting("AI_API_KEY")
+    model = read_setting("AI_MODEL")
+    fmt = read_setting("AI_API_FORMAT") or "openai"
+
+    if key and url:
+        return {"provider": "custom", "url": url, "key": key, "model": model or "deepseek-chat", "format": fmt}
+
+    configured = read_setting("DOUYIN_AI_PROVIDER").lower()
+    order = (choice,) if choice in PROVIDERS else AUTO_ORDER
+    if configured in PROVIDERS and configured not in order:
+        order = (configured,) + tuple(name for name in order if name != configured)
+
+    for name in order:
+        spec = PROVIDERS[name]
+        found = next((v for v in (read_setting(e) for e in spec["key_env"]) if v), "")
+        if not found:
+            continue
+        return {
+            "provider": name,
+            "url": url or spec["url"],
+            "key": found,
+            "model": model or spec["model"],
+            "format": fmt,
+        }
+    return empty
+
+
+def build(
+    url: str = "",
+    *,
+    out: str | None = None,
+    model: str | None = None,
+    no_ocr: bool = False,
+    force_video: bool = False,
+    ai: str = "auto",
+    auto_number: bool = False,
+    profile_dir: str | None = None,
+    batch_file: str = "",
+    browser_channel: str | None = None,
+    headless: bool = False,
+) -> Config:
+    load_dotenv()
+
+    output = out or os.environ.get("DOUYIN_OUTPUT_BASE") or str(Path.cwd() / "output")
+    profile = profile_dir or os.environ.get("DOUYIN_PROFILE_DIR") or str(cache_dir() / "browser")
+    whisper = model or os.environ.get("DOUYIN_WHISPER_MODEL") or "small"
+    ocr_off = no_ocr or os.environ.get("DISABLE_VIDEO_OCR") == "1"
+    numbered = auto_number or os.environ.get("DOUYIN_AUTO_NUMBER") == "1"
+    ai_cfg = resolve_ai(ai)
+
+    channel = browser_channel
+    if channel is None:
+        channel = os.environ.get("DOUYIN_BROWSER_CHANNEL", "")
+        # Windows 默认用系统 Chrome（体积小、启动快）；其他平台用 playwright 自带的 chromium
+        if not channel and os.name == "nt":
+            channel = "chrome"
+
+    return Config(
+        url=url,
+        batch_file=batch_file,
+        output_base=str(Path(output).expanduser().resolve()),
+        profile_dir=str(Path(profile).expanduser()),
+        ffmpeg=resolve_ffmpeg(),
+        whisper_model=whisper,
+        force_video=force_video,
+        disable_ocr=ocr_off,
+        auto_number=numbered,
+        browser_channel=channel,
+        headless=headless,
+        ai_provider=ai_cfg["provider"],
+        ai_api_url=ai_cfg["url"],
+        ai_api_key=ai_cfg["key"],
+        ai_model=ai_cfg["model"],
+        ai_api_format=ai_cfg["format"],
+    )

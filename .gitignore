@@ -1,0 +1,40 @@
+# ---- 产出与日志 ----
+output/
+temp_logs/
+batch_summary_*
+debug_*.png
+*.log
+
+# ---- 媒体与中间文件 ----
+*.wav
+*.mp3
+*.m4a
+*.aac
+*.mp4
+*.webm
+temp_audio.wav
+
+# ---- 私有数据（绝不入库）----
+.env
+config.ini
+cookies/
+browser-profile/
+**/douyin_profile/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# ---- 编辑器 / 备份 ----
+.vscode/
+.idea/
+*.bak
+*.bak-*

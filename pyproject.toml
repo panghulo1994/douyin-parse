@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "douyin-parse"
+version = "0.1.0"
+description = "抖音链接 → 文案 / 画面文字 / 可靠性分析"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+keywords = ["douyin", "whisper", "asr", "ocr", "cli", "chinese"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+dependencies = [
+  "playwright>=1.40",
+  "requests>=2.28",
+  "imageio-ffmpeg>=0.4",
+  "psutil>=5.9; sys_platform == 'win32'",
+]
+
+[project.optional-dependencies]
+asr = ["openai-whisper>=20231117"]
+ocr = ["rapidocr-onnxruntime>=1.3"]
+record = ["numpy>=1.24", "scipy>=1.10", "soundfile>=0.12", "sounddevice>=0.4"]
+all = [
+  "openai-whisper>=20231117",
+  "rapidocr-onnxruntime>=1.3",
+  "numpy>=1.24",
+  "scipy>=1.10",
+  "soundfile>=0.12",
+  "sounddevice>=0.4",
+]
+
+[project.scripts]
+dyparse = "douyin_parse.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/douyin_parse"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
