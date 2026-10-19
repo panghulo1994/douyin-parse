@@ -14,6 +14,10 @@ dyparse parse "https://v.douyin.com/xxxxxx/"
 - 图文：直接读页面文本，不下载、不 OCR
 - AI 可选：标点恢复 + 可靠性分析（任意 OpenAI 兼容接口），不配也能跑
 
+![dyparse 运行示例](docs/demo.png)
+
+> 上图是一次真实运行：20 秒短视频，全本地模式（`--ai none --no-ocr`）。
+
 ## 安装
 
 需要 Python 3.10+ 和 ffmpeg。
@@ -133,8 +137,10 @@ faster-whisper 后端、本地文件模式、`--headless`。
 
 尚未完成：
 
-- [ ] 代理 / 自定义 UA
 - [ ] 失效自动检测（页面结构改版时给出明确提示）
+- [ ] 图形界面
+
+发布流程（PyPI + Trusted Publishing）见 [docs/发布.md](docs/发布.md)。
 - [ ] 更多平台适配与失效自动检测
 
 ## 许可与免责声明

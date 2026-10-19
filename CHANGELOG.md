@@ -11,6 +11,8 @@
 - 转录后端可选：`faster-whisper`（推荐，CPU 快 3–4 倍、不装 torch）或 `openai-whisper`
 - `dyparse doctor`：Python / playwright / 浏览器 / ffmpeg / 转录后端 / OCR / AI / 输出目录一次检查
 - `--headless`、`--proxy`、`--user-agent`
+- PyPI 发布工作流（Trusted Publishing，无需 token）与 [docs/发布.md](docs/发布.md)
+- README 运行示例图 `docs/demo.png`
 - 跨平台配置目录；Windows 用户级环境变量里的 key 也能读到
 
 ### 变更
@@ -20,6 +22,7 @@
 - 移除 3 处硬编码路径（输出目录、浏览器 profile、ffmpeg）
 - 默认转录模型由 `large-v3` 改为 `small`
 - 目录自动编号改为可选（`--auto-number`）
+- 移除 `legacy/`（旧的 Windows bat 入口，仅本机可用）
 - AI 供应商探测改用环境变量 + Windows 注册表直读，不再启 powershell 子进程
 
 ### 修复
