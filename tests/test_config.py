@@ -36,6 +36,14 @@ class BuildTest(unittest.TestCase):
     def test_no_ocr_flag(self):
         self.assertTrue(build("u", no_ocr=True).disable_ocr)
 
+    def test_backend_from_env(self):
+        with mock.patch.dict(os.environ, {"DOUYIN_TRANSCRIBE_BACKEND": "whisper"}, clear=False):
+            self.assertEqual(build("u").transcribe_backend, "whisper")
+
+    def test_backend_explicit_wins(self):
+        with mock.patch.dict(os.environ, {"DOUYIN_TRANSCRIBE_BACKEND": "whisper"}, clear=False):
+            self.assertEqual(build("u", backend="faster-whisper").transcribe_backend, "faster-whisper")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -87,6 +87,14 @@ def main() -> int:
 
     rows.append((OK if _has_module("rapidocr_onnxruntime") else WARN, "RapidOCR", "已安装" if _has_module("rapidocr_onnxruntime") else "未安装，将跳过画面文字"))
 
+    from .transcribe import available_backends
+
+    backends = available_backends()
+    if backends:
+        rows.append((OK, "转录后端", " / ".join(backends)))
+    else:
+        rows.append((WARN, "转录后端", "未安装：pip install faster-whisper（推荐）或 openai-whisper"))
+
     ai_cfg = resolve_ai("auto")
     if ai_cfg["key"]:
         rows.append((OK, "AI", f"{ai_cfg['provider']} / {ai_cfg['model']}"))

@@ -12,9 +12,12 @@ from . import ai
 from .ai import call_ai_analysis, normalize_extracted_text, restore_punctuation
 from .browser import minimize_browser_windows
 from .config import Config
+from .correct import correct_transcript
+from .extract import analyze_page
 from .media import choose_record_device, download_to_file
 from .naming import auto_number_folders, safe_name
 from .render import build_analysis_md, build_ocr_md, format_reliability_output, fmt_duration
+from .transcribe import transcribe_file
 
 try:
     from playwright.sync_api import sync_playwright
@@ -30,6 +33,17 @@ def ensure_runtime_ready(cfg):
         ffmpeg_dir = os.path.dirname(cfg.ffmpeg)
         if ffmpeg_dir and ffmpeg_dir not in os.environ.get("PATH", ""):
             os.environ["PATH"] = ffmpeg_dir + os.pathsep + os.environ.get("PATH", "")
+
+
+def _wav_seconds(path: str) -> float:
+    """读 WAV 时长（秒）；失败返回 0。"""
+    try:
+        import wave
+
+        with wave.open(path, "rb") as handle:
+            return handle.getnframes() / float(handle.getframerate() or 16000)
+    except Exception:
+        return 0.0
 
 
 def _launch_kwargs(cfg):
@@ -102,106 +116,12 @@ def run(cfg: Config) -> int:
                 context.close()
                 return 1
 
-        # 多维度综合判定图文/视频
-        score = 0
-
-        # 维度1：URL 路径包含 /note/（强信号）
-        if '/note/' in final_url:
-            score += 2
-
-        # 维度2：页面是否有 <video> 元素（加导航稳定性处理）
-        try:
-            page.wait_for_load_state('domcontentloaded', timeout=8000)
-        except:
-            pass
-        try:
-            has_video = page.evaluate('!!document.querySelector("video")')
-        except:
-            # 页面导航中导致 evaluate 失败，等待后重试
-            print("  页面导航中，等待2秒后重试...")
-            time.sleep(2)
-            try:
-                page.wait_for_load_state('domcontentloaded', timeout=10000)
-            except:
-                pass
-            has_video = page.evaluate('!!document.querySelector("video")')
-        if not has_video:
-            score += 1
-
-        # 维度3：图片数量 + 视频播放器 + 图文DOM 综合检测
-        dom_check = page.evaluate("""
-            () => {
-                const imgs = document.querySelectorAll('img');
-                // 排除小图标（头像、点赞等 < 100px 的图）
-                const largeImgs = Array.from(imgs).filter(i =>
-                    i.naturalWidth > 100 || i.width > 100 || i.clientWidth > 100
-                ).length;
-                const hasVideoPlayer = !!document.querySelector(
-                    'video, [class*="video-player"], [class*="player"], [class*="xgplayer"]'
-                );
-                const hasImageNoteDOM = !!document.querySelector(
-                    '[class*="image-note"], [class*="slide"], [class*="swiper"], ' +
-                    '[class*="carousel"], [class*="gallery-view"], [class*="image-viewer"]'
-                );
-                return { largeImgs, hasVideoPlayer, hasImageNoteDOM };
-            }
-        """)
-        if dom_check['largeImgs'] > 3 and not dom_check['hasVideoPlayer']:
-            score += 1
-        if dom_check['hasImageNoteDOM']:
-            score += 1
-
-        # 维度4：标题关键词（仅在无视频或明确有图文标签时计入）
-        title_keywords = ['#图文', '#图片', '#笔记', '#图集', '#相册', '【图文】']
-        if any(kw in page_title for kw in title_keywords):
-            score += 1
-
-        # 如果有video标签或URL含有/video/，只有在/note/存在或score>=3时才认定为图文
-        if has_video or '/video/' in final_url:
-            is_image_text = ('/note/' in final_url) or (score >= 3)
-        else:
-            is_image_text = score >= 2
-
-        # 强制视频模式
-        if cfg.force_video:
-            is_image_text = False
-            print(f"  [强制视频模式] 忽略图文判定，强制走视频流程")
-
-        print(f"  图文判定得分: {score}/5 (阈值≥2)")
-        print(f"    URL /note/: {'[YES]' if '/note/' in final_url else '[NO]'} (+2)")
-        print(f"    无video元素: {'[YES]' if not has_video else '[NO]'} (+1)")
-        print(f"    大图>3且无播放器: {'[YES]' if dom_check['largeImgs']>3 and not dom_check['hasVideoPlayer'] else '[NO]'} (+1)")
-        print(f"    图文DOM结构: {'[YES]' if dom_check['hasImageNoteDOM'] else '[NO]'} (+1)")
-        print(f"    标题关键词: {'[YES]' if any(kw in page_title for kw in title_keywords) else '[NO]'} (+1)")
-
-        content_type = "图文" if is_image_text else "视频"
-        print(f"  内容类型: {content_type}")
-
-        # --- 提取标题 ---
-        title = ''
-        for sel in ['[data-e2e="video-title"]', '[data-e2e="note-title"]', 'h1', '[class*="title"]']:
-            e = page.query_selector(sel)
-            if e:
-                title = e.inner_text().strip()
-                break
-        if not title:
-            title = page.title()
-
-        # --- 提取作者 ---
-        author = ''
-        for sel in ['[data-e2e="user-info"]', '[class*="author"]', '[class*="nickname"]', '[class*="creator"]']:
-            e = page.query_selector(sel)
-            if e:
-                author = e.inner_text().strip()
-                break
-
-        # --- 提取标签 ---
-        tags = []
-        for sel in ['[class*="tag"]', '[class*="hashtag"]', 'a[href*="tag"]']:
-            for e in page.query_selector_all(sel):
-                t = e.inner_text().strip()
-                if t and len(t) < 30 and t not in tags:
-                    tags.append(t)
+        meta = analyze_page(page, final_url, cfg.force_video)
+        content_type = meta["content_type"]
+        is_image_text = meta["is_image_text"]
+        title = meta["title"]
+        author = meta["author"]
+        tags = meta["tags"]
 
         # ============ 图文分支：从DOM提取文本 ============
         if is_image_text:
@@ -355,7 +275,6 @@ def run(cfg: Config) -> int:
                 print(f"  标点恢复未生效（AI未配置或返回异常）")
 
             # --- 文案修订 ---
-            from .correct import correct_transcript
             correction_result = correct_transcript(transcript_punct)
             transcript = correction_result['corrected']
             print(f"  文案修订: 修正{correction_result['stats']['total_corrections']}处, 修订后{len(transcript)}字")
@@ -588,53 +507,33 @@ def run(cfg: Config) -> int:
         print("错误: 无法获取音频")
         return 1
 
+    # 以音频实际长度为准：页面上读到的 duration 偶尔是预加载片段
+    audio_seconds = _wav_seconds(audio_file)
+    if audio_seconds and abs(audio_seconds - duration) > 3:
+        print(f"  时长以音频为准: {duration:.0f}秒 -> {audio_seconds:.0f}秒")
+        duration = audio_seconds
+
     # ============ 4. Whisper 转录 ============
     print("\n步骤4: Whisper转录...")
     t1 = time.time()
 
-    os.environ['PATH'] = os.path.dirname(cfg.ffmpeg) + os.pathsep + os.environ.get('PATH', '')
+    if cfg.ffmpeg:
+        os.environ['PATH'] = os.path.dirname(cfg.ffmpeg) + os.pathsep + os.environ.get('PATH', '')
 
-    # Workaround for Python 3.11 torch compatibility issue
-    from unittest import mock
-    if not hasattr(mock, 'patch'):
-        def _patch(target, *args, **kwargs):
-            return mock.patch(target, *args, **kwargs)
-        mock.patch = _patch
-
-    import whisper
-    import numpy as np
-
-    print(f"  模型: {cfg.whisper_model}")
-    model = whisper.load_model(cfg.whisper_model)
-
-    if os.path.exists(audio_file):
-        try:
-            audio_array = whisper.load_audio(audio_file)
-        except:
-            import soundfile as sf
-            from scipy import signal as sig
-            audio_array, sr = sf.read(audio_file)
-            if audio_array.ndim > 1:
-                audio_array = audio_array.mean(axis=1)
-            audio_array = audio_array.astype(np.float32)
-            if sr != 16000:
-                audio_array = sig.resample(audio_array, int(len(audio_array) * 16000 / sr))
-    else:
-        print("错误: 没有音频文件")
+    print(f"  模型: {cfg.whisper_model} (后端: {cfg.transcribe_backend})")
+    try:
+        transcription = transcribe_file(
+            audio_file,
+            model=cfg.whisper_model,
+            backend=cfg.transcribe_backend,
+        )
+    except Exception as exc:
+        print(f"  错误: 转录失败 - {exc}")
         return 1
 
-    print(f"  音频: {len(audio_array)/16000:.1f}秒, 振幅={audio_array.max():.4f}")
-    print("  转录中...")
-
-    result = model.transcribe(
-        audio_array,
-        language='zh',
-        verbose=False,
-        fp16=False,
-        initial_prompt="以下是普通话短视频内容，可能涉及财税、自媒体、AI工具、经营合规。请准确保留专有名词、人名、平台名和数字。"
-    )
-    transcript_raw = normalize_extracted_text(result['text'].strip())
-    print(f"  转录完成: {len(transcript_raw)}字, 耗时{time.time()-t1:.1f}秒")
+    print(f"  转录耗时: {transcription.seconds:.1f}秒 (后端: {transcription.backend})")
+    transcript_raw = normalize_extracted_text(transcription.text)
+    print(f"  转录完成: {len(transcript_raw)}字")
 
     # --- 标点恢复 ---
     print("  标点恢复中...")
@@ -645,7 +544,6 @@ def run(cfg: Config) -> int:
         print(f"  标点恢复未生效（AI未配置或返回异常）")
 
     # --- 文案修订 ---
-    from .correct import correct_transcript
     correction_result = correct_transcript(transcript_punct)
     transcript = correction_result['corrected']
     print(f"  文案修订: 修正{correction_result['stats']['total_corrections']}处, 修订后{len(transcript)}字")
@@ -654,11 +552,13 @@ def run(cfg: Config) -> int:
     ocr_texts = []
     try:
         from .ocr import extract_text_from_video, format_ocr_output
-        HAS_OCR = not cfg.disable_ocr
+        HAS_OCR = True
     except ImportError:
         HAS_OCR = False
 
-    if HAS_OCR and os.path.exists(video_file):
+    if cfg.disable_ocr:
+        print("\n  [OCR] 已按 --no-ocr 跳过画面文字提取")
+    elif HAS_OCR and os.path.exists(video_file):
         print("\n步骤5.5: 提取视频画面文字(OCR)...")
         ocr_texts = extract_text_from_video(video_file, cfg.ffmpeg, interval=1.0, max_frames=60)
         if ocr_texts:
@@ -666,8 +566,7 @@ def run(cfg: Config) -> int:
         else:
             print("  OCR未提取到文字")
     else:
-        if not HAS_OCR:
-            print("\n  [OCR] 未安装rapidocr-onnxruntime，跳过画面文字提取")
+        print("\n  [OCR] 未安装 rapidocr-onnxruntime，跳过画面文字提取")
 
     # ============ 6. AI 可靠性分析 ============
     analysis = None

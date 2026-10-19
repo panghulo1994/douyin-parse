@@ -1,5 +1,6 @@
 # ---- 产出与日志 ----
 output/
+output_*/
 temp_logs/
 batch_summary_*
 debug_*.png

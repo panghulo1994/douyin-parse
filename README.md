@@ -30,6 +30,16 @@ playwright install chromium   # 非 Windows 或没装 Chrome 时需要
 > 还没发布到 PyPI：现在请用「开发模式」安装（`git clone` → `pip install -e ".[all]"`）。
 > 上面前两种写法是发布后的目标形态。
 
+转录后端二选一，**推荐 faster-whisper**（CPU 快 3–4 倍，不用装 torch）：
+
+```bash
+pip install faster-whisper     # 约 300 MB
+# 或
+pip install openai-whisper     # 会带入 torch，约 2.5 GB
+```
+
+`dyparse doctor` 会告诉你当前能用哪个。
+
 装完先自检：
 
 ```bash
@@ -43,6 +53,7 @@ dyparse parse "https://v.douyin.com/xxxx/"            # 单条
 dyparse parse "https://v.douyin.com/xxxx/" -v         # 强制按视频解析
 dyparse parse "https://v.douyin.com/xxxx/" --ai none  # 全本地，不调用 AI
 dyparse batch links.txt                               # 批量，一行一个链接
+dyparse transcribe ./a.mp4                            # 本地文件，不联网、不开浏览器
 dyparse config --init                                 # 生成 .env 模板
 ```
 
@@ -55,6 +66,8 @@ dyparse config --init                                 # 生成 .env 模板
 | `--no-ocr` | 跳过画面文字提取 | 不跳过 |
 | `--ai auto\|none\|deepseek\|mimo` | AI 供应商 | `auto` |
 | `--auto-number` | 按修改时间给输出目录统一编号 | 关 |
+| `--backend NAME` | `auto/faster-whisper/whisper` | `auto` |
+| `--headless` | 无头浏览器（服务器用） | 关 |
 | `-v, --force-video` | 图文被误判时强制视频流程 | 关 |
 
 也可以用环境变量：`DOUYIN_OUTPUT_BASE` / `DOUYIN_WHISPER_MODEL` / `DISABLE_VIDEO_OCR` / `DOUYIN_AI_PROVIDER` / `AI_API_URL` / `AI_API_KEY` / `AI_MODEL`。
@@ -98,18 +111,24 @@ CPU 上实测（30 分钟视频，i9-14900HX）：
 
 - Windows：默认调用系统 Chrome（`DOUYIN_BROWSER_CHANNEL=chrome`），窗口会自动最小化
 - macOS / Linux：需要 `playwright install chromium`，窗口最小化自动跳过
-- 无图形界面服务器：暂不支持（浏览器以有头模式运行）
+- 无图形界面服务器：加 `--headless`（抖音可能对无头浏览器更敏感，失败就换回有头）
 
 ## 现状
 
-v0.1 把原先的单文件脚本拆成了模块（`config / browser / media / ai / render / correct / naming / ocr / pipeline`），
-提供 `dyparse` 命令行、跨平台配置目录、`doctor` 自检和单元测试。
+v0.1 把原先的单文件脚本拆成了模块：
+
+```text
+cli / config / pipeline / extract / transcribe / ocr / media / browser
+ai / render / correct / naming / batch / local / doctor
+```
+
+已完成：`dyparse` 命令行、跨平台配置目录、`doctor` 自检、单元测试、
+faster-whisper 后端、本地文件模式、`--headless`。
 
 尚未完成：
 
-- [ ] `faster-whisper` 后端（安装体积可从 ~2.5 GB 降到 ~300 MB）
-- [ ] 本地文件输入（`dyparse transcribe ./a.mp4`）
 - [ ] 代理 / 自定义 UA
+- [ ] 失效自动检测（页面结构改版时给出明确提示）
 - [ ] 更多平台适配与失效自动检测
 
 ## 许可与免责声明

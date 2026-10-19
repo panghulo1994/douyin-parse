@@ -23,6 +23,7 @@ dyparse parse "<链接>" --out ./output --ai none
 ```
 
 - 用户只想拿文案：加 `--ai none`，全本地、不花钱。
+- 用户给的是本地文件而不是链接：用 `dyparse transcribe "<文件路径>"`，不开浏览器。
 - 一条消息里有多个链接：写进 `links.txt`，跑 `dyparse batch links.txt`。
 - 视频被误判成图文：加 `-v`。
 - 长视频（>10 分钟）：加 `--model small`，否则会很慢。

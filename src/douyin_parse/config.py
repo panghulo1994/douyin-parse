@@ -28,11 +28,13 @@ AUTO_ORDER = ("mimo", "deepseek")
 @dataclass
 class Config:
     url: str = ""
+    input_file: str = ""
     batch_file: str = ""
     output_base: str = ""
     profile_dir: str = ""
     ffmpeg: str = ""
     whisper_model: str = "small"
+    transcribe_backend: str = "auto"
     force_video: bool = False
     disable_ocr: bool = False
     auto_number: bool = False
@@ -161,6 +163,8 @@ def build(
     auto_number: bool = False,
     profile_dir: str | None = None,
     batch_file: str = "",
+    input_file: str = "",
+    backend: str = "auto",
     browser_channel: str | None = None,
     headless: bool = False,
 ) -> Config:
@@ -172,6 +176,7 @@ def build(
     ocr_off = no_ocr or os.environ.get("DISABLE_VIDEO_OCR") == "1"
     numbered = auto_number or os.environ.get("DOUYIN_AUTO_NUMBER") == "1"
     ai_cfg = resolve_ai(ai)
+    backend_name = backend if backend not in (None, "", "auto") else (os.environ.get("DOUYIN_TRANSCRIBE_BACKEND") or "auto")
 
     channel = browser_channel
     if channel is None:
@@ -182,11 +187,13 @@ def build(
 
     return Config(
         url=url,
+        input_file=input_file,
         batch_file=batch_file,
         output_base=str(Path(output).expanduser().resolve()),
         profile_dir=str(Path(profile).expanduser()),
         ffmpeg=resolve_ffmpeg(),
         whisper_model=whisper,
+        transcribe_backend=backend_name,
         force_video=force_video,
         disable_ocr=ocr_off,
         auto_number=numbered,
