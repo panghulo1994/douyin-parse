@@ -1,5 +1,9 @@
 # douyin-parse
 
+[![CI](https://github.com/panghulo1994/douyin-parse/actions/workflows/ci.yml/badge.svg)](https://github.com/panghulo1994/douyin-parse/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
+
 把抖音分享链接变成可读的文案：`链接 → 文案.txt / 文案_分析版.md`，附带画面文字（OCR）与一段 AI 可靠性分析。
 
 ```bash

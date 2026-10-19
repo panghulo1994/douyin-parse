@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import sys
 from pathlib import Path
 
 from . import __version__, ai, pipeline
@@ -29,6 +30,19 @@ DISABLE_VIDEO_OCR=
 # 1 = 给输出目录统一编号
 DOUYIN_AUTO_NUMBER=
 """
+
+
+def _force_utf8_output() -> None:
+    """Windows 上把输出重定向到文件/管道时，默认编码可能是 cp936/cp1252。"""
+    for stream in (sys.stdout, sys.stderr):
+        encoding = (getattr(stream, "encoding", "") or "").lower()
+        if encoding in ("utf-8", "utf8"):
+            continue
+        try:
+            if not stream.isatty():
+                stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -92,6 +106,7 @@ def _handle_config(args: argparse.Namespace) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    _force_utf8_output()
     args = build_parser().parse_args(argv)
 
     if args.command == "doctor":
