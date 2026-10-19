@@ -5,6 +5,8 @@
 [![PyPI](https://img.shields.io/pypi/v/douyin-parse.svg)](https://pypi.org/project/douyin-parse/)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 
+> **PyPI**：<https://pypi.org/project/douyin-parse/> · 安装：`pipx install "douyin-parse[all]"`
+
 把抖音分享链接变成可读的文案：`链接 → 文案.txt / 文案_分析版.md`，附带画面文字（OCR）与一段 AI 可靠性分析。
 
 ```bash
