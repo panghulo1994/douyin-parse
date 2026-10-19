@@ -23,6 +23,8 @@ jobs:
       - name: Unit tests
         run: python -m unittest discover -s tests -v
       - name: CLI smoke
-        run: |
-          python -m douyin_parse --help
-          python -m douyin_parse doctor
+        run: python -m douyin_parse --help
+      - name: Doctor (informational)
+        # 环境自检依赖 ffmpeg / 浏览器 / 模型，不应当作代码门禁
+        continue-on-error: true
+        run: python -m douyin_parse doctor
