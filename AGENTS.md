@@ -2,6 +2,9 @@
 
 > 面向所有会读仓库根目录 `AGENTS.md` 的工具：Codex、Claude Code、Cursor、Copilot、DSH 等。
 > 人看的说明在 [README.md](README.md)，贡献流程在 [CONTRIBUTING.md](CONTRIBUTING.md)。
+>
+> **本文件是项目知识的唯一来源**（架构 / 命令 / 约定 / 坑）。本机路径、密钥位置、个人工作流不要写进来。
+> Claude Code 通过 [CLAUDE.md](CLAUDE.md) 导入本文件；Copilot 读 [.github/copilot-instructions.md](.github/copilot-instructions.md)（只是索引，不重复维护）。
 
 ## 这是什么
 

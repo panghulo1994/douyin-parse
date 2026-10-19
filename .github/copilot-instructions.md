@@ -1,6 +1,6 @@
 # Copilot instructions
 
-本项目的约定见仓库根目录 [AGENTS.md](../AGENTS.md)。
+本项目的完整约定在仓库根目录 [AGENTS.md](../AGENTS.md)。**这里只做索引，不要重复维护。**
 
 要点：
 
