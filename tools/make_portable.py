@@ -57,16 +57,21 @@ def install_package(python: Path, wheel: Path) -> None:
 
 
 def copy_ffmpeg(base_python: Path, dst: Path) -> None:
+    src = None
     try:
         out = subprocess.check_output(
             [str(base_python), "-c",
              "import imageio_ffmpeg;print(imageio_ffmpeg.get_ffmpeg_exe())"],
             text=True,
         ).strip()
-    except Exception as exc:
-        log(f"找不到 imageio-ffmpeg 的 ffmpeg：{exc}")
-        return
-    src = Path(out)
+        src = Path(out)
+    except Exception:
+        found = shutil.which("ffmpeg")
+        if found:
+            src = Path(found)
+        else:
+            log("⚠ 找不到 ffmpeg，便携版可能无法转码")
+            return
     if src.is_file():
         dst.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, dst / "ffmpeg.exe")

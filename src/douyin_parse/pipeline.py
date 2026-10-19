@@ -91,10 +91,16 @@ def run(cfg: Config) -> int:
 
     print("步骤1: 打开页面，检测内容类型...")
     with sync_playwright() as p:
-        context = p.chromium.launch_persistent_context(
-            cfg.profile_dir, **_launch_kwargs(cfg),
-            viewport={'width': 1280, 'height': 900}
-        )
+        try:
+            context = p.chromium.launch_persistent_context(
+                cfg.profile_dir, **_launch_kwargs(cfg),
+                viewport={'width': 1280, 'height': 900}
+            )
+        except Exception as exc:
+            print(f"  错误: 浏览器启动失败 - {exc}")
+            print("  处理办法：先关掉所有 Chrome 窗口再重试；仍然失败就删除浏览器配置目录：")
+            print(f"    {cfg.profile_dir}")
+            return 2
         page = context.new_page()
         # new_page() 才会创建可见标签页，此时立即最小化。
         minimize_browser_windows()
