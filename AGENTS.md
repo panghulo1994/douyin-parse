@@ -74,6 +74,8 @@ python tools/make_portable.py --no-zip       # 打便携版（不压 zip 快一�
 - **Windows 编码**：PowerShell 的 `*>` 重定向会写成 UTF-16；CLI 在非 TTY 时会把输出强制成 UTF-8，否则 `--help` 在 Windows CI 上会 `UnicodeEncodeError`。
 - **playwright 启动**：Windows 先找系统 Chrome，没有就用 Edge（`config.detect_browser_channel()`），其他平台用自带 chromium；服务器环境加 `--headless`。
 - **AI 探测不要起子进程**：Windows 上 `powershell` 冷启动可达 50 秒，早期用它读环境变量导致探测必然超时。现在写的是 `os.environ` + `winreg` 直读。
+- **纠错必须是单趟替换**：`correct.py` 用一条正则（同一起点取最长匹配）+ 窗口守卫，保证规则之间互相看不见。**不要改回"按长度逐条 `str.replace`"**——那样后一条规则会吃到前一条的产物，历史上造成 57 条词条互相打架：`SOTA` 注解被追加两次、`FDE` 被补成 `FDEE`、`开源项目` 被改成 `开开源项目`。
+- **词条不要写成全局单字/常用词映射**：`假→甲`、`现成→县城`、`缺乏→确权` 这类会把正常文本改错。上下文专用的修正要写成带上下文的短语。
 
 ## 改完先自检
 
