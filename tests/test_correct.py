@@ -75,5 +75,32 @@ class NewlyAddedCorrectionsTest(unittest.TestCase):
         self.assertIn("起承转合", correct_transcript("需要启程转合")["corrected"])
 
 
+class DownstreamMarketCorrectionsTest(unittest.TestCase):
+    """2026-10-20 从「AI赚钱第二场·下沉市场」那期补的误听。"""
+
+    def test_agent_variants(self):
+        for text in ("这些制程体卖的都很便宜", "哪怕你不做制成体"):
+            self.assertIn("智能体", correct_transcript(text)["corrected"])
+
+    def test_b_end_and_marketing_terms(self):
+        self.assertIn("小B端企业", correct_transcript("我们先说小B图企业")["corrected"])
+        self.assertIn("地推", correct_transcript("一家一家的去递推")["corrected"])
+        self.assertIn("扫街", correct_transcript("去扫电")["corrected"])
+        self.assertIn("歌单", correct_transcript("拷贝割单")["corrected"])
+        self.assertIn("边际效益", correct_transcript("你编辑效益就出来了")["corrected"])
+
+    def test_tool_names(self):
+        self.assertIn("即梦", correct_transcript("你打开机梦")["corrected"])
+        self.assertIn("AI漫剧", correct_transcript("很多人都学了AI漫步")["corrected"])
+        self.assertIn("一个Skill", correct_transcript("或者是一个scale")["corrected"])
+        self.assertIn("卖Skill", correct_transcript("我不让大家去卖scale")["corrected"])
+
+    def test_camera_phrase(self):
+        self.assertIn(
+            "拍立得相机和数码相机",
+            correct_transcript("没有这个拍立得相机和相机")["corrected"],
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
