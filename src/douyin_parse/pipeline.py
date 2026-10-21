@@ -470,8 +470,13 @@ def run(cfg: Config) -> int:
     # 方案C：fallback录音
     if not audio_ready:
         print("  所有下载方案失败，改用录音方案...")
-        import sounddevice as sd
-        import soundfile as sf
+        try:
+            import sounddevice as sd
+            import soundfile as sf
+        except ImportError:
+            print("错误: 录音降级方案需要 sounddevice 与 soundfile")
+            print("      请先 pip install sounddevice soundfile，或排查网络/代理后重试以直接下载到音频流")
+            return 1
 
         with sync_playwright() as p:
             context = p.chromium.launch_persistent_context(

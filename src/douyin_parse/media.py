@@ -1,5 +1,6 @@
 """媒体下载与音频设备选择。"""
 import os
+import time
 import urllib.error
 import urllib.request
 
@@ -11,8 +12,8 @@ except ModuleNotFoundError:  # pragma: no cover
 REQUESTS_AVAILABLE = requests is not None
 
 
-def download_to_file(url, output_path, headers, min_bytes=1, timeout=60):
-    """安全下载：先写临时文件，大小合格后再替换正式文件。"""
+def _download_once(url, output_path, headers, min_bytes, timeout):
+    """下载一次。返回 (成功, 错误信息, 字节数)。"""
     tmp_path = output_path + '.tmp'
     if os.path.exists(tmp_path):
         os.remove(tmp_path)
@@ -48,6 +49,28 @@ def download_to_file(url, output_path, headers, min_bytes=1, timeout=60):
         if os.path.exists(tmp_path):
             os.remove(tmp_path)
         return False, str(e), 0
+
+
+def download_to_file(url, output_path, headers, min_bytes=1, timeout=60, retries=2):
+    """安全下载：先写临时文件，大小合格后再替换正式文件。
+
+    CDN 偶发的 SSL EOF / 连接重置这类瞬时错误会自动重试；
+    HTTP 状态码错误（403/404 等）不重试，因为重试也不会变。
+    """
+    last_error = ""
+    for attempt in range(retries + 1):
+        ok, error, size = _download_once(url, output_path, headers, min_bytes, timeout)
+        if ok:
+            return True, "", size
+        last_error = error
+        if error.startswith("HTTP "):
+            # 状态码错误（403/404 等）重试也不会变，直接放弃
+            break
+        if attempt < retries:
+            wait = 1.5 * (attempt + 1)
+            print(f"    下载失败({error[:60]})，{wait:.1f}秒后重试({attempt + 1}/{retries})")
+            time.sleep(wait)
+    return False, last_error, 0
 
 
 def choose_record_device(sd):
