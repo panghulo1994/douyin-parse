@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "douyin-parse"
-version = "0.1.1"
+version = "0.1.2"
 description = "抖音链接 → 文案 / 画面文字 / 可靠性分析"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -37,6 +37,12 @@ all = [
 
 [project.scripts]
 dyparse = "douyin_parse.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/panghulo1994/douyin-parse"
+Repository = "https://github.com/panghulo1994/douyin-parse"
+Issues = "https://github.com/panghulo1994/douyin-parse/issues"
+Changelog = "https://github.com/panghulo1994/douyin-parse/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/douyin_parse"]

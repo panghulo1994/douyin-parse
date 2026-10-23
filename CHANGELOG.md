@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.1.2 — 2026-10-23
+
+- 打包元数据补 `[project.urls]`（Homepage / Repository / Issues / Changelog），PyPI 项目页可直接跳回仓库
 
 - 新增 `dyparse web`：本地网页界面（粘贴链接、点按钮、看进度、复制正文）
 - 新增 `dyparse interactive`：控制台交互模式，双击后按提示粘贴链接
